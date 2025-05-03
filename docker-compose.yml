@@ -6,13 +6,32 @@ services:
     container_name: digging-reverse-proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs:ro
       - ./nginx-conf:/etc/nginx/conf.d
       - ./nginx.tmpl:/app/nginx.tmpl
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
     restart: always
-    networks: 
-      - proxy                                             
+    networks:
+      - proxy
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: digging-ssl-helper
+    environment:
+      - NGINX_PROXY_CONTAINER=digging-reverse-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    depends_on:
+      - nginx-proxy
+    networks:
+      - proxy
 
 networks:
   proxy:
