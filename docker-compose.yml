@@ -30,6 +30,7 @@ services:
       - ./html:/usr/share/nginx/html
     depends_on:
       - nginx-proxy
+    restart: always
     networks:
       - proxy
 
